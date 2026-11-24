@@ -1,0 +1,5 @@
+bgpd=yes
+bfdd=yes
+zebra=yes
+staticd=yes
+vtysh_enable=yes

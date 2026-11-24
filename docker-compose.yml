@@ -1,0 +1,67 @@
+services:
+  edge-gw:
+    image: quay.io/frrouting/frr:10.2.1
+    container_name: frr-edge-gw
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.rp_filter=0
+    volumes:
+      - ./configs/edge-gw/daemons:/etc/frr/daemons:ro
+      - ./configs/edge-gw/frr.conf:/etc/frr/frr.conf:ro
+    networks:
+      isp1_net:
+        ipv4_address: 10.255.1.1
+      isp2_net:
+        ipv4_address: 10.255.2.1
+      lan_net:
+        ipv4_address: 198.51.100.1
+
+  isp1-primary:
+    image: quay.io/frrouting/frr:10.2.1
+    container_name: frr-isp1-primary
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+    volumes:
+      - ./configs/isp1-primary/daemons:/etc/frr/daemons:ro
+      - ./configs/isp1-primary/frr.conf:/etc/frr/frr.conf:ro
+    networks:
+      isp1_net:
+        ipv4_address: 10.255.1.2
+
+  isp2-backup:
+    image: quay.io/frrouting/frr:10.2.1
+    container_name: frr-isp2-backup
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+    volumes:
+      - ./configs/isp2-backup/daemons:/etc/frr/daemons:ro
+      - ./configs/isp2-backup/frr.conf:/etc/frr/frr.conf:ro
+    networks:
+      isp2_net:
+        ipv4_address: 10.255.2.2
+
+networks:
+  isp1_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.255.1.0/29
+  isp2_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.255.2.0/29
+  lan_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 198.51.100.0/24
